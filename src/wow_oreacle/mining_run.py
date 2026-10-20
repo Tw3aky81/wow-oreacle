@@ -1,5 +1,5 @@
 import datetime as dt
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum, auto
 from wow_oreacle.mined_ore import MinedOre
 
@@ -8,6 +8,13 @@ class Status(Enum):
     ACTIVE = auto()
     INCOMPLETE = auto()
     COMPLETED = auto()
+
+
+class Competition(Enum):
+    NONE = auto()
+    LOW = auto()
+    MEDIUM = auto()
+    HIGH = auto()
 
 
 class MiningRunError(ValueError):
@@ -25,9 +32,13 @@ class MiningRun:
     end_time: dt.datetime | None = None
     ores: list[MinedOre] | None = None
     lumber: int | None = None
-    competition: str | None = None
+    competition: Competition | None = None
     comment: str | None = None
-    status: Status = Status.ACTIVE
+    _status: Status = field(default=Status.ACTIVE, init=False)
+
+    @property
+    def status(self) -> Status:
+        return self._status
 
     def duration_in_hours(self) -> float:
         # end_time should not be None when status is not ACTIVE
