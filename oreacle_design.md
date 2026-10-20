@@ -16,7 +16,7 @@ The project will eventually replace an existing spreadsheet, but it does not hav
 
 ### Primary goal: learning to design and build
 
-Oreacle is primarily a **personal learning project**, with a target budget of **20–40 hours** for a finished first version. The project should help the developer independently move from requirements to a working application, outside the structure of tutorials.
+Oreacle is primarily a **personal learning project**, with a target budget of **20–40 hours** for a finished first version. The project should help me independently move from requirements to a working application, outside the structure of tutorials.
 
 Special attention goes to:
 
@@ -26,7 +26,7 @@ Special attention goes to:
 - Small, deliberate design decisions and maintainable code.
 - Learning to refactor for concrete reasons, without overengineering.
 
-**Working agreement:** the developer designs and implements the application. The mentor asks questions, provides hints, discusses alternatives, and reviews code; complete solutions are given only on request.
+**Working agreement:** I design and implement the application. The mentor asks questions, provides hints, discusses alternatives, and reviews code; complete solutions are given only on request.
 
 ## 2. Current workflow and problem
 
