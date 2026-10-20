@@ -5,68 +5,57 @@ from wow_oreacle.mining_run import MiningRun, MiningRunError, Status
 
 
 class TestMiningRun(unittest.TestCase):
-    def test_mining_run_start_initialization(self):
-        mr = MiningRun(
+    def setUp(self) -> None:
+        self.mr_start = MiningRun(
             unique_id="MR-0001",
             zone="Eversong Woods",
             route="Mining Only",
             start_time=dt.datetime(2026, 9, 22, 22, 45),
         )
-        self.assertIsInstance(mr.unique_id, str)
-        self.assertEqual(mr.unique_id, "MR-0001")
-        self.assertIsInstance(mr.zone, str)
-        self.assertEqual(mr.zone, "Eversong Woods")
-        self.assertIsInstance(mr.route, str)
-        self.assertEqual(mr.route, "Mining Only")
-        self.assertIsInstance(mr.start_time, dt.datetime)
-        self.assertEqual(mr.start_time.year, 2026)
-        self.assertEqual(mr.start_time.month, 9)
-        self.assertEqual(mr.start_time.day, 22)
-        self.assertEqual(mr.start_time.hour, 22)
-        self.assertEqual(mr.start_time.minute, 45)
-        self.assertEqual(mr.status, Status.ACTIVE)
 
-        self.assertIsNone(mr.end_time)
-        self.assertIsNone(mr.ores)
-        self.assertIsNone(mr.lumber)
+        self.mr_incomplete = MiningRun(
+            unique_id="MR-0001",
+            zone="Eversong Woods",
+            route="Mining Only",
+            start_time=dt.datetime(2026, 9, 22, 22, 45),
+            end_time=dt.datetime(2026, 9, 22, 23, 36),
+        )
+        self.mr_incomplete._status = Status.INCOMPLETE
+
+    def test_mining_run_start_initialization(self):
+        self.assertEqual(self.mr_start.unique_id, "MR-0001")
+        self.assertEqual(self.mr_start.zone, "Eversong Woods")
+        self.assertEqual(self.mr_start.route, "Mining Only")
+        self.assertEqual(self.mr_start.start_time, dt.datetime(2026, 9, 22, 22, 45))
+        self.assertEqual(self.mr_start.status, Status.ACTIVE)
+
+        self.assertIsNone(self.mr_start.end_time)
+        self.assertIsNone(self.mr_start.ores)
+        self.assertIsNone(self.mr_start.lumber)
 
     def test_mining_run_status_is_read_only(self):
-        mr = MiningRun(
-            unique_id="MR-0001",
-            zone="Eversong Woods",
-            route="Mining Only",
-            start_time=dt.datetime(2026, 9, 22, 22, 45),
-        )
-
         with self.assertRaises(AttributeError):
-            mr.status = Status.COMPLETED
-
-    def test_mining_run_active_ore_per_hour_raises_error(self):
-        mr = MiningRun(
-            unique_id="MR-0001",
-            zone="Eversong Woods",
-            route="Mining Only",
-            start_time=dt.datetime(2026, 9, 22, 22, 45),
-        )
-        with self.assertRaises(MiningRunError):
-            mr.ore_per_hour()
+            self.mr_start.status = Status.COMPLETED
 
     def test_mining_run_active_duration_in_hours_raises_error(self):
-        mr = MiningRun(
-            unique_id="MR-0001",
-            zone="Eversong Woods",
-            route="Mining Only",
-            start_time=dt.datetime(2026, 9, 22, 22, 45),
-        )
         with self.assertRaises(MiningRunError):
-            mr.duration_in_hours()
+            self.mr_start.duration_in_hours()
+
+    def test_mining_run_active_ore_per_hour_raises_error(self):
+        with self.assertRaises(MiningRunError):
+            self.mr_start.ore_per_hour()
 
     def test_mining_run_active_total_ore_raises_error(self):
-        mr = MiningRun(
-            unique_id="MR-0001",
-            zone="Eversong Woods",
-            route="Mining Only",
-            start_time=dt.datetime(2026, 9, 22, 22, 45),
-        )
         with self.assertRaises(MiningRunError):
-            mr.total_ore()
+            self.mr_start.total_ore()
+
+    def test_mining_run_incomplete_duration_in_hours(self):
+        self.assertEqual(self.mr_incomplete.duration_in_hours(), 0.85)
+
+    def test_mining_run_incomplete_ore_per_hour_raises_error(self):
+        with self.assertRaises(MiningRunError):
+            self.mr_incomplete.ore_per_hour()
+
+    def test_mining_run_incomplete_total_ore_raises_error(self):
+        with self.assertRaises(MiningRunError):
+            self.mr_incomplete.total_ore()
