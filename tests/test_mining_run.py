@@ -169,7 +169,8 @@ class TestMiningRun(unittest.TestCase):
         )
 
         if run.ores is None:
-            self.fail("Expected ores to be a list, got None")
+            self.fail("Expected ores to be a tuple, got None")
+        self.assertIsInstance(run.ores, tuple)
         for ore in run.ores:
             self.assertIsInstance(ore, MinedOre)
         self.assertEqual(len(run.ores), 9)
@@ -188,7 +189,7 @@ class TestMiningRun(unittest.TestCase):
                 comment="Test comment",
             )
 
-        self.assertNotEqual(run.status, Status.COMPLETED)
+        self.assertEqual(run.status, Status.INCOMPLETE)
         self.assertIsNone(run.ores)
         self.assertIsNone(run.lumber)
         self.assertIsNone(run.competition)
@@ -203,7 +204,7 @@ class TestMiningRun(unittest.TestCase):
                 comment="Test comment",
             )
 
-        self.assertNotEqual(run.status, Status.COMPLETED)
+        self.assertEqual(run.status, Status.INCOMPLETE)
         self.assertIsNone(run.ores)
         self.assertIsNone(run.lumber)
         self.assertIsNone(run.competition)
@@ -230,7 +231,7 @@ class TestMiningRun(unittest.TestCase):
                 comment="Test comment",
             )
 
-        self.assertNotEqual(run.status, Status.COMPLETED)
+        self.assertEqual(run.status, Status.INCOMPLETE)
         self.assertIsNone(run.ores)
         self.assertIsNone(run.lumber)
         self.assertIsNone(run.competition)
@@ -254,7 +255,7 @@ class TestMiningRun(unittest.TestCase):
                 comment="Test comment",
             )
 
-        self.assertNotEqual(run.status, Status.COMPLETED)
+        self.assertEqual(run.status, Status.INCOMPLETE)
         self.assertIsNone(run.ores)
         self.assertIsNone(run.lumber)
         self.assertIsNone(run.competition)
@@ -281,10 +282,16 @@ class TestMiningRun(unittest.TestCase):
                 comment="Test comment",
             )
 
-        self.assertNotEqual(run.status, Status.COMPLETED)
+        self.assertEqual(run.status, Status.INCOMPLETE)
         self.assertIsNone(run.ores)
         self.assertIsNone(run.lumber)
         self.assertIsNone(run.competition)
+
+    def test_mining_run_compleste_lumber_negative_raises_error(self):
+        run = self.make_incomplete_run()
+
+        with self.assertRaises(MiningRunError):
+            run.complete(self.test_ores, -17, Competition.MEDIUM)
 
     def test_mining_run_complete_twice_raises_error(self):
         run = self.make_incomplete_run()
@@ -320,3 +327,15 @@ class TestMiningRun(unittest.TestCase):
         self.assertEqual(run.competition, Competition.LOW)
         self.assertEqual(run.comment, "Test comment")
         self.assertEqual(run.status, Status.COMPLETED)
+
+    def test_mining_run_complete_ores_immutable(self):
+        run = self.make_incomplete_run()
+        ores = self.test_ores.copy()
+
+        run.complete(ores, 24, Competition.LOW)
+
+        ores.clear()
+
+        if run.ores is None:
+            self.fail("Expecting 'ores' to be a tuple, got None.")
+        self.assertEqual(len(run.ores), 9)
