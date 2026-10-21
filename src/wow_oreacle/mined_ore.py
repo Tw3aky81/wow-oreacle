@@ -16,12 +16,12 @@ class OreQuality(Enum):
 
 @dataclass(frozen=True)
 class MinedOre:
-    ore: OreType
+    type: OreType
     quality: OreQuality
     amount: int
 
     def __post_init__(self):
-        if not isinstance(self.ore, OreType):
+        if not isinstance(self.type, OreType):
             raise TypeError("Error: 'ore' is not an OreType.")
         if not isinstance(self.quality, OreQuality):
             raise TypeError("Error: 'quality' is not an OreQuality.")

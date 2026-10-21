@@ -31,10 +31,10 @@ class MiningRun:
     zone: str
     route: str
     start_time: dt.datetime
-    end_time: dt.datetime | None = None
-    ores: list[MinedOre] | None = None
-    lumber: int | None = None
-    competition: Competition | None = None
+    _end_time: dt.datetime | None = field(default=None, init=False)
+    _ores: tuple[MinedOre, ...] | None = field(default=None, init=False)
+    _lumber: int | None = field(default=None, init=False)
+    _competition: Competition | None = field(default=None, init=False)
     comment: str | None = None
     _status: Status = field(default=Status.ACTIVE, init=False)
 
@@ -50,6 +50,22 @@ class MiningRun:
     @property
     def status(self) -> Status:
         return self._status
+
+    @property
+    def end_time(self) -> dt.datetime | None:
+        return self._end_time
+
+    @property
+    def ores(self) -> tuple[MinedOre, ...] | None:
+        return self._ores
+
+    @property
+    def lumber(self) -> int | None:
+        return self._lumber
+
+    @property
+    def competition(self) -> Competition | None:
+        return self._competition
 
     def duration_in_hours(self) -> float:
         # end_time should not be None when status is not ACTIVE
@@ -77,14 +93,46 @@ class MiningRun:
         )
 
     def stop(self):
-        if self._status != Status.ACTIVE:
+        if not self.status == Status.ACTIVE:
             raise MiningRunError("Error: Mining run is not in ACTIVE state.")
 
         end_time = dt.datetime.now(dt.timezone.utc)
-        if self.start_time < end_time:
-            self.end_time = end_time
-            self._status = Status.INCOMPLETE
-            return
-        raise MiningRunError(
-            "Error: 'end_time' cannot be less than or equal to 'start_time'."
-        )
+        if not self.start_time < end_time:
+            raise MiningRunError(
+                "Error: 'end_time' cannot be less than or equal to 'start_time'."
+            )
+        self._end_time = end_time
+        self._status = Status.INCOMPLETE
+
+    def complete(
+        self,
+        ores: list[MinedOre],
+        lumber: int,
+        competition: Competition,
+        comment: str = "",
+    ):
+        if type(lumber) is not int:
+            raise TypeError("Error: lumber should be of type 'int'.")
+
+        if not isinstance(competition, Competition):
+            raise TypeError("Error: competition is not a valid type.")
+
+        if self.status != Status.INCOMPLETE:
+            raise MiningRunError("Error: Mining run is not in INCOMPLETE state.")
+
+        if (
+            not len(ores) == 9
+            or not len({(ore.type, ore.quality) for ore in ores}) == 9
+        ):
+            raise MiningRunError("Error: List of ores is not complete or invalid.")
+
+        if lumber < 0:
+            raise MiningRunError(
+                "Error: Amount of lumber must be bigger or equal to zero."
+            )
+
+        self._ores = tuple(ores)
+        self._lumber = lumber
+        self._competition = competition
+        self.comment = comment
+        self._status = Status.COMPLETED
