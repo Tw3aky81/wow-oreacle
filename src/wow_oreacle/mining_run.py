@@ -111,17 +111,18 @@ class MiningRun:
         competition: Competition,
         comment: str = "",
     ):
+        if self.status != Status.INCOMPLETE:
+            raise MiningRunError("Error: Mining run is not in INCOMPLETE state.")
+
         if type(lumber) is not int:
             raise TypeError("Error: lumber should be of type 'int'.")
 
         if not isinstance(competition, Competition):
             raise TypeError("Error: competition is not a valid type.")
 
-        if self.status != Status.INCOMPLETE:
-            raise MiningRunError("Error: Mining run is not in INCOMPLETE state.")
-
         if (
-            not len(ores) == 9
+            not all([isinstance(ore, MinedOre) for ore in ores])
+            or not len(ores) == 9
             or not len({(ore.type, ore.quality) for ore in ores}) == 9
         ):
             raise MiningRunError("Error: List of ores is not complete or invalid.")

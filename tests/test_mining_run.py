@@ -213,6 +213,13 @@ class TestMiningRun(unittest.TestCase):
         test_ores = [
             "Copper of good quality",
             "Some Silver",
+            "Some Silver",
+            "Some Silver",
+            "Some Silver",
+            "Some Silver",
+            "Some Silver",
+            "Some Silver",
+            "Some Silver",
         ]
 
         with self.assertRaises(MiningRunError):
