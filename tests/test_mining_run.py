@@ -287,11 +287,27 @@ class TestMiningRun(unittest.TestCase):
         self.assertIsNone(run.lumber)
         self.assertIsNone(run.competition)
 
-    def test_mining_run_compleste_lumber_negative_raises_error(self):
+    def test_mining_run_complete_lumber_negative_raises_error(self):
         run = self.make_incomplete_run()
 
         with self.assertRaises(MiningRunError):
             run.complete(self.test_ores, -17, Competition.MEDIUM)
+
+        self.assertEqual(run.status, Status.INCOMPLETE)
+        self.assertIsNone(run.ores)
+        self.assertIsNone(run.lumber)
+        self.assertIsNone(run.competition)
+
+    def test_mining_run_complete_lumber_boolean_raises_error(self):
+        run = self.make_incomplete_run()
+
+        with self.assertRaises(TypeError):
+            run.complete(self.test_ores, True, Competition.MEDIUM)
+
+        self.assertEqual(run.status, Status.INCOMPLETE)
+        self.assertIsNone(run.ores)
+        self.assertIsNone(run.lumber)
+        self.assertIsNone(run.competition)
 
     def test_mining_run_complete_twice_raises_error(self):
         run = self.make_incomplete_run()
@@ -339,3 +355,22 @@ class TestMiningRun(unittest.TestCase):
         if run.ores is None:
             self.fail("Expecting 'ores' to be a tuple, got None.")
         self.assertEqual(len(run.ores), 9)
+
+    def test_mining_run_complete_statistics(self):
+        run = self.make_incomplete_run()
+        run.complete(self.test_ores, 24, Competition.LOW)
+
+        self.assertEqual(run.total_ore(), 357)
+        self.assertEqual(run.duration_in_hours(), 1.5)
+        self.assertEqual(run.ore_per_hour(), 238.0)
+
+    def test_mining_run_complete_active_raises_error(self):
+        run = self.make_new_run()
+
+        with self.assertRaises(MiningRunError):
+            run.complete(self.test_ores, 24, Competition.LOW)
+
+        self.assertEqual(run.status, Status.ACTIVE)
+        self.assertIsNone(run.ores)
+        self.assertIsNone(run.lumber)
+        self.assertIsNone(run.competition)

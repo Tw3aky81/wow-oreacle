@@ -79,13 +79,11 @@ class MiningRun:
         )
 
     def total_ore(self) -> int:
-        if self.status == Status.COMPLETED:
-            ore_sum = 0
-            if self.ores:
-                for ore in self.ores:
-                    ore_sum += ore.amount
-            return ore_sum
-        raise MiningRunError("Error: total_ore unknown - Mining run not complete yet.")
+        if self.status != Status.COMPLETED or self._ores is None:
+            raise MiningRunError(
+                "Error: total_ore unknown - Mining run not complete yet."
+            )
+        return sum(ore.amount for ore in self._ores)
 
     def ore_per_hour(self) -> float:
         if self.status == Status.COMPLETED:
@@ -127,9 +125,9 @@ class MiningRun:
 
         if (
             not all(isinstance(ore, MinedOre) for ore in ores)
-            or not len(ores) == self.REQUIRED_ORE_COMBINATIONS
-            or not len({(ore.type, ore.quality) for ore in ores})
-            == self.REQUIRED_ORE_COMBINATIONS
+            or len(ores) != self.REQUIRED_ORE_COMBINATIONS
+            or len({(ore.type, ore.quality) for ore in ores})
+            != self.REQUIRED_ORE_COMBINATIONS
         ):
             raise MiningRunError("Error: List of ores is not complete or invalid.")
 
