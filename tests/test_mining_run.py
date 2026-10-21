@@ -173,7 +173,7 @@ class TestMiningRun(unittest.TestCase):
         self.assertIsInstance(run.ores, tuple)
         for ore in run.ores:
             self.assertIsInstance(ore, MinedOre)
-        self.assertEqual(len(run.ores), 9)
+        self.assertEqual(run.ores, tuple(self.test_ores))
         self.assertEqual(run.lumber, 24)
         self.assertIsInstance(run.competition, Competition)
         self.assertEqual(run.comment, "Test comment")
