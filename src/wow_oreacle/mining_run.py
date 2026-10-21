@@ -1,7 +1,7 @@
 import datetime as dt
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Self
+from typing import ClassVar, Self
 
 from wow_oreacle.mined_ore import MinedOre
 
@@ -26,6 +26,8 @@ class MiningRunError(ValueError):
 @dataclass
 class MiningRun:
     """Class for keeping track of mining run statistics."""
+
+    REQUIRED_ORE_COMBINATIONS: ClassVar[int] = 9
 
     unique_id: int | None
     zone: str
@@ -114,6 +116,9 @@ class MiningRun:
         if self.status != Status.INCOMPLETE:
             raise MiningRunError("Error: Mining run is not in INCOMPLETE state.")
 
+        if not isinstance(ores, list):
+            raise TypeError("Error: ores is not a list")
+
         if type(lumber) is not int:
             raise TypeError("Error: lumber should be of type 'int'.")
 
@@ -121,9 +126,10 @@ class MiningRun:
             raise TypeError("Error: competition is not a valid type.")
 
         if (
-            not all([isinstance(ore, MinedOre) for ore in ores])
-            or not len(ores) == 9
-            or not len({(ore.type, ore.quality) for ore in ores}) == 9
+            not all(isinstance(ore, MinedOre) for ore in ores)
+            or not len(ores) == self.REQUIRED_ORE_COMBINATIONS
+            or not len({(ore.type, ore.quality) for ore in ores})
+            == self.REQUIRED_ORE_COMBINATIONS
         ):
             raise MiningRunError("Error: List of ores is not complete or invalid.")
 
