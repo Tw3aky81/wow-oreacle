@@ -1,6 +1,8 @@
 import datetime as dt
 from dataclasses import dataclass, field
 from enum import Enum, auto
+from typing import Self
+
 from wow_oreacle.mined_ore import MinedOre
 
 
@@ -25,7 +27,7 @@ class MiningRunError(ValueError):
 class MiningRun:
     """Class for keeping track of mining run statistics."""
 
-    unique_id: str
+    unique_id: int | None
     zone: str
     route: str
     start_time: dt.datetime
@@ -35,6 +37,15 @@ class MiningRun:
     competition: Competition | None = None
     comment: str | None = None
     _status: Status = field(default=Status.ACTIVE, init=False)
+
+    @classmethod
+    def start_new(cls, zone: str, route: str) -> Self:
+        return cls(
+            unique_id=None,
+            zone=zone,
+            route=route,
+            start_time=dt.datetime.now(dt.timezone.utc),
+        )
 
     @property
     def status(self) -> Status:
@@ -63,4 +74,17 @@ class MiningRun:
             return self.total_ore() / self.duration_in_hours()
         raise MiningRunError(
             "Error: ore_per_hour unknown - Mining run not complete yet."
+        )
+
+    def stop(self):
+        if self._status != Status.ACTIVE:
+            raise MiningRunError("Error: Mining run is not in ACTIVE state.")
+
+        end_time = dt.datetime.now(dt.timezone.utc)
+        if self.start_time < end_time:
+            self.end_time = end_time
+            self._status = Status.INCOMPLETE
+            return
+        raise MiningRunError(
+            "Error: 'end_time' cannot be less than or equal to 'start_time'."
         )
