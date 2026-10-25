@@ -25,7 +25,9 @@ class MiningRunRecord(Base):
     competition: Mapped[Optional[Competition]]
     comment: Mapped[Optional[str]]
 
-    ores: Mapped[list["MinedOreRecord"]] = relationship(back_populates="mining_run")
+    ores: Mapped[list["MinedOreRecord"]] = relationship(
+        back_populates="mining_run", cascade="all, delete-orphan"
+    )
 
 
 class MinedOreRecord(Base):
