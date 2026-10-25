@@ -374,3 +374,28 @@ class TestMiningRun(unittest.TestCase):
         self.assertIsNone(run.ores)
         self.assertIsNone(run.lumber)
         self.assertIsNone(run.competition)
+
+    def test_mining_run_restore(self):
+        run = MiningRun.restore(
+            unique_id=42,
+            zone="Eversong Woords",
+            route="Mining Only",
+            start_time=self.mock_start_time,
+            end_time=self.mock_end_time,
+            status=Status.COMPLETED,
+            ores=tuple(self.test_ores),
+            lumber=100,
+            competition=Competition.LOW,
+            comment="Test run",
+        )
+
+        self.assertEqual(run.unique_id, 42)
+        self.assertEqual(run.status, Status.COMPLETED)
+        self.assertEqual(run.start_time, self.mock_start_time)
+        self.assertEqual(run.end_time, self.mock_end_time)
+        self.assertEqual(run.ores, tuple(self.test_ores))
+        self.assertEqual(run.lumber, 100)
+        self.assertEqual(run.competition, Competition.LOW)
+        self.assertEqual(run.comment, "Test run")
+
+        self.assertEqual(run.total_ore(), 357)

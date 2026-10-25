@@ -49,6 +49,35 @@ class MiningRun:
             start_time=dt.datetime.now(dt.timezone.utc),
         )
 
+    @classmethod
+    def restore(
+        cls,
+        unique_id: int,
+        zone: str,
+        route: str,
+        start_time: dt.datetime,
+        end_time: dt.datetime | None,
+        status: Status,
+        ores: tuple[MinedOre, ...] | None,
+        lumber: int | None,
+        competition: Competition | None,
+        comment: str | None,
+    ) -> Self:
+        run = cls(
+            unique_id=unique_id,
+            zone=zone,
+            route=route,
+            start_time=start_time,
+            comment=comment,
+        )
+        run._end_time = end_time
+        run._status = status
+        run._ores = ores
+        run._lumber = lumber
+        run._competition = competition
+
+        return run
+
     @property
     def status(self) -> Status:
         return self._status
