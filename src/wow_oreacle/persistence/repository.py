@@ -23,6 +23,10 @@ class MiningRunRepository:
             )
 
         if run.unique_id is None:
+            if run.status != Status.ACTIVE:
+                raise MiningRunRepositoryError(
+                    "A new mining run must have ACTIVE status."
+                )
             new_record = MiningRunRecord(
                 zone=run.zone,
                 route=run.route,
@@ -99,7 +103,11 @@ class MiningRunRepository:
             zone=record.zone,
             route=record.route,
             start_time=record.start_time.replace(tzinfo=timezone.utc),
-            end_time=record.end_time,
+            end_time=(
+                record.end_time.replace(tzinfo=timezone.utc)
+                if record.end_time is not None
+                else None
+            ),
             status=record.status,
             ores=ores,
             lumber=record.lumber,

@@ -171,3 +171,39 @@ class TestRepository(unittest.TestCase):
 
         self.assertEqual(len(runs), 2)
         self.assertTrue(all(run.status == Status.COMPLETED for run in runs))
+
+    def test_mining_run_repository_loaded_incomplete_run_duration(self):
+        saved_run = self.create_saved_incomplete_run()
+
+        self.session.commit()
+        self.session.expunge_all()
+
+        loaded_runs = self.repository.get_incomplete()
+
+        self.assertEqual(len(loaded_runs), 1)
+        loaded_run = loaded_runs[0]
+
+        self.assertAlmostEqual(
+            loaded_run.duration_in_hours(),
+            saved_run.duration_in_hours(),
+        )
+
+    def test_mining_run_repository_loaded_completed_run_stats(self):
+        saved_run = self.create_saved_completed_run()
+
+        self.session.commit()
+        self.session.expunge_all()
+
+        loaded_runs = self.repository.get_completed()
+
+        self.assertEqual(len(loaded_runs), 1)
+        loaded_run = loaded_runs[0]
+
+        self.assertEqual(
+            loaded_run.total_ore(),
+            saved_run.total_ore(),
+        )
+        self.assertAlmostEqual(
+            loaded_run.ore_per_hour(),
+            saved_run.ore_per_hour(),
+        )
