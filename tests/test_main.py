@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from wow_oreacle.main import OreacleApp, OreacleAppError
 from wow_oreacle.mined_ore import MinedOre, OreQuality, OreType
-from wow_oreacle.mining_run import Competition, MiningRunError, Status
+from wow_oreacle.mining_run import Competition, Status
 from wow_oreacle.persistence.models import Base
 from wow_oreacle.persistence.repository import MiningRunRepository
 
