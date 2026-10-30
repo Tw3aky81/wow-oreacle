@@ -1,5 +1,7 @@
+from wow_oreacle.cli import cli
 from wow_oreacle.mined_ore import MinedOre
 from wow_oreacle.mining_run import Competition, MiningRun
+from wow_oreacle.persistence.database import SessionLocal
 from wow_oreacle.persistence.repository import MiningRunRepository
 
 
@@ -55,5 +57,9 @@ class OreacleApp:
         return run
 
 
-def main(argv: list[str] | None = None) -> int:
-    return 0
+def main() -> None:
+    with SessionLocal() as session:
+        repository = MiningRunRepository(session)
+        app = OreacleApp(repository=repository)
+
+        cli(obj=app)
