@@ -24,7 +24,7 @@ class OreacleApp:
         run = self.repository.get_active()
 
         if run is None:
-            raise OreacleAppError("Error: There is no active mining run to stop.")
+            raise OreacleAppError("There is no active mining run to stop.")
 
         run.stop()
         self.repository.save(run)
@@ -48,9 +48,7 @@ class OreacleApp:
         )
 
         if run is None:
-            raise OreacleAppError(
-                f"Error: No incomplete mining run found with ID {run_id}."
-            )
+            raise OreacleAppError(f"No incomplete mining run found with ID {run_id}.")
 
         run.complete(ores, lumber, competition, comment)
         self.repository.save(run)
@@ -66,4 +64,4 @@ def main() -> None:
         repository = MiningRunRepository(session)
         app = OreacleApp(repository=repository)
 
-        cli(obj={"app": app, "commit": session.commit})
+        cli(obj={"app": app, "commit": session.commit}, standalone_mode=False)
