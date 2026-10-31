@@ -60,8 +60,10 @@ def main() -> None:
 
     Base.metadata.create_all(engine)
 
-    with SessionLocal.begin() as session:
+    with SessionLocal() as session:
         repository = MiningRunRepository(session)
         app = OreacleApp(repository=repository)
 
         cli(obj={"app": app, "commit": session.commit}, standalone_mode=False)
+
+        session.commit()
