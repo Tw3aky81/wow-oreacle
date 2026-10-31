@@ -1,7 +1,7 @@
-from wow_oreacle.cli import cli
 from wow_oreacle.mined_ore import MinedOre
 from wow_oreacle.mining_run import Competition, MiningRun
-from wow_oreacle.persistence.database import SessionLocal
+from wow_oreacle.persistence.database import SessionLocal, engine
+from wow_oreacle.persistence.models import Base
 from wow_oreacle.persistence.repository import MiningRunRepository
 
 
@@ -58,8 +58,12 @@ class OreacleApp:
 
 
 def main() -> None:
-    with SessionLocal() as session:
+    from wow_oreacle.cli import cli
+
+    Base.metadata.create_all(engine)
+
+    with SessionLocal.begin() as session:
         repository = MiningRunRepository(session)
         app = OreacleApp(repository=repository)
 
-        cli(obj=app)
+        cli(obj={"app": app, "commit": session.commit})
