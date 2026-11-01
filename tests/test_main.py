@@ -109,3 +109,18 @@ class TestOreacleApp(unittest.TestCase):
                 competition=Competition.LOW,
                 comment="No fishing along the way.",
             )
+
+    def test_oreacle_app_get_incomplete(self):
+        incomplete_runs = []
+
+        for i in range(2):
+            self.app.start_mining_run("eversong woods", "mining only")
+            self.session.commit()
+
+            run = self.app.stop_mining_run()
+            self.session.commit()
+
+            incomplete_runs.append(run)
+
+        loaded_runs = self.app.get_incomplete_mining_runs()
+        self.assertCountEqual(loaded_runs, incomplete_runs)

@@ -78,10 +78,20 @@ class TestMiningRun(unittest.TestCase):
         with self.assertRaises(MiningRunError):
             run.ore_per_hour()
 
+    def test_mining_run_active_lumber_per_hour_raises_error(self):
+        run = self.make_new_run()
+        with self.assertRaises(MiningRunError):
+            run.lumber_per_hour()
+
     def test_mining_run_active_total_ore_raises_error(self):
         run = self.make_new_run()
         with self.assertRaises(MiningRunError):
             run.total_ore()
+
+    def test_mining_run_active_total_lumber_raises_error(self):
+        run = self.make_new_run()
+        with self.assertRaises(MiningRunError):
+            run.total_lumber()
 
     def test_mining_run_incomplete_duration_in_hours(self):
         run = self.make_incomplete_run()
@@ -92,10 +102,20 @@ class TestMiningRun(unittest.TestCase):
         with self.assertRaises(MiningRunError):
             run.ore_per_hour()
 
+    def test_mining_run_incomplete_lumber_per_hour_raises_error(self):
+        run = self.make_incomplete_run()
+        with self.assertRaises(MiningRunError):
+            run.lumber_per_hour()
+
     def test_mining_run_incomplete_total_ore_raises_error(self):
         run = self.make_incomplete_run()
         with self.assertRaises(MiningRunError):
             run.total_ore()
+
+    def test_mining_run_incomplete_total_lumber_raises_error(self):
+        run = self.make_incomplete_run()
+        with self.assertRaises(MiningRunError):
+            run.total_lumber()
 
     @patch("wow_oreacle.mining_run.dt.datetime")
     def test_mining_run_start_new(self, mock_datetime):
@@ -363,6 +383,8 @@ class TestMiningRun(unittest.TestCase):
         self.assertEqual(run.total_ore(), 357)
         self.assertEqual(run.duration_in_hours(), 1.5)
         self.assertEqual(run.ore_per_hour(), 238.0)
+        self.assertEqual(run.total_lumber(), 24)
+        self.assertEqual(run.lumber_per_hour(), 16.0)
 
     def test_mining_run_complete_active_raises_error(self):
         run = self.make_new_run()

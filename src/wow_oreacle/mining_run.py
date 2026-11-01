@@ -121,6 +121,20 @@ class MiningRun:
             "Error: ore_per_hour unknown - Mining run not complete yet."
         )
 
+    def total_lumber(self) -> int:
+        if self.status != Status.COMPLETED or self._lumber is None:
+            raise MiningRunError(
+                "Error: total_lumber unknown - Mining run not complete yet."
+            )
+        return self._lumber
+
+    def lumber_per_hour(self) -> float:
+        if self.status == Status.COMPLETED:
+            return self.total_lumber() / self.duration_in_hours()
+        raise MiningRunError(
+            "Error: lumber_per_hour unknown - Mining run not complete yet."
+        )
+
     def stop(self):
         if not self.status == Status.ACTIVE:
             raise MiningRunError("Error: Mining run is not in ACTIVE state.")

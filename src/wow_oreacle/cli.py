@@ -6,7 +6,7 @@ import click
 
 from wow_oreacle.main import OreacleAppError
 from wow_oreacle.mined_ore import MinedOre, OreQuality, OreType
-from wow_oreacle.mining_run import Competition
+from wow_oreacle.mining_run import Competition, MiningRun
 
 if TYPE_CHECKING:
     from wow_oreacle.main import OreacleApp
@@ -33,9 +33,13 @@ def start(context, zone: str, route: str):
 
     app = context["app"]
 
-    run = app.start_mining_run(zone, route)
+    try:
+        run = app.start_mining_run(zone, route)
+    except OreacleAppError as exc:
+        raise click.ClickException(str(exc)) from exc
+
     click.echo(f"Mining run started in {run.zone}")
-    click.echo(f"Started at: {run.start_time}")
+    click.echo(f"Started at: {run.start_time.astimezone():%Y-%m-%d %H:%M:%S %Z}")
 
 
 @miningrun.command()
@@ -53,8 +57,66 @@ def stop(context):
 
     commit()
     assert run.unique_id is not None
+    assert run.end_time is not None
 
     click.echo("Mining run stopped.")
+    click.echo(f"Stopped at: {run.end_time.astimezone():%Y-%m-%d %H:%M:%S %Z}")
+
+    ores, lumber, competition, comment = prompt_mining_results()
+
+    try:
+        completed_run = app.complete_mining_run(
+            run.unique_id, ores, lumber, competition, comment
+        )
+    except OreacleAppError as exc:
+        raise click.ClickException(str(exc)) from exc
+
+    print_completed_run_stats(completed_run)
+
+
+@miningrun.command()
+@click.pass_obj
+def complete(context):
+    """Complete an unfinished mining run."""
+
+    app: OreacleApp = context["app"]
+
+    incomplete_runs = app.get_incomplete_mining_runs()
+
+    if len(incomplete_runs) == 0:
+        click.echo("There are no unfinished mining runs to complete.")
+        return
+
+    click.echo("Incomplete mining runs:")
+    click.echo()
+
+    for index, run in enumerate(incomplete_runs, start=1):
+        assert run.end_time is not None
+        click.echo(
+            f"\t{index}. {run.end_time.astimezone():%Y-%m-%d %H:%M}  {run.zone} - {run.route}"
+        )
+
+    click.echo()
+    selection = click.prompt(
+        "Select mining run",
+        type=click.IntRange(min=1, max=len(incomplete_runs)),
+        default=1,
+    )
+    selected_run = incomplete_runs[selection - 1]
+    assert selected_run.unique_id is not None
+    ores, lumber, competition, comment = prompt_mining_results()
+
+    try:
+        completed_run = app.complete_mining_run(
+            selected_run.unique_id, ores, lumber, competition, comment
+        )
+    except OreacleAppError as exc:
+        raise click.ClickException(str(exc)) from exc
+
+    print_completed_run_stats(completed_run)
+
+
+def prompt_mining_results():
     click.echo()
     click.echo("Enter your mining results:")
 
@@ -63,16 +125,7 @@ def stop(context):
     competition = prompt_competition()
     comment = click.prompt("Comment", type=str, default="")
 
-    try:
-        app.complete_mining_run(run.unique_id, ores, lumber, competition, comment)
-    except OreacleAppError as exc:
-        raise click.ClickException(str(exc)) from exc
-
-
-@miningrun.command()
-def complete():
-    """Complete an unfinished mining run."""
-    ...
+    return ores, lumber, competition, comment
 
 
 def prompt_mined_ores() -> list[MinedOre]:
@@ -109,6 +162,17 @@ def prompt_competition() -> Competition:
         "Competition (N=None, L=Low, M=Medium, H=High)",
         type=click.Choice(list(choices), case_sensitive=False),
         default="M",
+        show_choices=False,
     )
 
     return choices[answer.upper()]
+
+
+def print_completed_run_stats(completed_run: MiningRun):
+    click.echo(f"\nMining run with ID {completed_run.unique_id} completed.")
+    click.echo(f"  Duration: {completed_run.duration_in_hours():.2f} hours")
+    click.echo(f"  Total ores: {completed_run.total_ore()}")
+    click.echo(f"  Ores per hour: {completed_run.ore_per_hour():.2f}")
+    click.echo()
+    click.echo(f"  Total lumber: {completed_run.total_lumber()}")
+    click.echo(f"  Lumber per hour: {completed_run.lumber_per_hour():.2f}")

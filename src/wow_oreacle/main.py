@@ -1,3 +1,5 @@
+import click
+
 from wow_oreacle.mined_ore import MinedOre
 from wow_oreacle.mining_run import Competition, MiningRun
 from wow_oreacle.persistence.database import SessionLocal, engine
@@ -15,7 +17,7 @@ class OreacleApp:
 
     def start_mining_run(self, zone: str, route: str) -> MiningRun:
         if self.repository.get_active() is not None:
-            raise OreacleAppError("Error: There is already another mining run active.")
+            raise OreacleAppError("There is already another mining run active.")
         run = MiningRun.start_new(zone=zone, route=route)
         self.repository.save(run)
         return run
@@ -54,6 +56,9 @@ class OreacleApp:
         self.repository.save(run)
         return run
 
+    def get_incomplete_mining_runs(self) -> list[MiningRun]:
+        return self.repository.get_incomplete()
+
 
 def main() -> None:
     from wow_oreacle.cli import cli
@@ -64,6 +69,13 @@ def main() -> None:
         repository = MiningRunRepository(session)
         app = OreacleApp(repository=repository)
 
-        cli(obj={"app": app, "commit": session.commit}, standalone_mode=False)
+        try:
+            cli(obj={"app": app, "commit": session.commit}, standalone_mode=False)
+        except click.ClickException as exc:
+            exc.show()
+            raise SystemExit(exc.exit_code) from None
+        except click.Abort:
+            click.echo("\nAborted!", err=True)
+            raise SystemExit(1) from None
 
         session.commit()
