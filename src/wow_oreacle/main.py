@@ -59,6 +59,21 @@ class OreacleApp:
     def get_incomplete_mining_runs(self) -> list[MiningRun]:
         return self.repository.get_incomplete()
 
+    def get_stats(self) -> dict:
+        runs = self.repository.get_completed()
+        total_hours = sum(run.duration_in_hours() for run in runs)
+        total_ores = sum(run.total_ore() for run in runs)
+        total_lumber = sum(run.total_lumber() for run in runs)
+        stats = {
+            "completed_runs": len(runs),
+            "total_hours": total_hours,
+            "total_ores": total_ores,
+            "ores_per_hour": total_ores / total_hours,
+            "total_lumber": total_lumber,
+            "lumber_per_hour": total_lumber / total_hours,
+        }
+        return stats
+
 
 def main() -> None:
     from wow_oreacle.cli import cli
