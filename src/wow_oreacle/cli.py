@@ -18,6 +18,31 @@ def cli():
     pass
 
 
+@cli.command()
+@click.pass_obj
+def stats(context):
+    """Show statistics."""
+
+    app: OreacleApp = context["app"]
+
+    stats = app.get_stats()
+
+    click.echo("=" * 80)
+    click.echo("WoW Oreacle")
+    click.echo("=" * 80)
+    click.echo()
+    click.echo("Overall Statistics:")
+    click.echo()
+    click.echo(f"Completed runs............: {stats['completed_runs']}")
+    click.echo(f"Total mining time.........: {stats['total_hours']:.2f} hours")
+    click.echo(f"Total ores mined..........: {stats['total_ores']}")
+    click.echo(f"Ores/hour.................: {stats['ores_per_hour']:.2f}")
+    click.echo(f"Total lumber gathered.....: {stats['total_lumber']}")
+    click.echo(f"Lumber/hour...............: {stats['lumber_per_hour']:.2f}")
+    click.echo()
+    click.echo("-" * 80)
+
+
 @cli.group()
 def miningrun():
     """Manage mining runs."""

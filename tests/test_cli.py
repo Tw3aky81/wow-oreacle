@@ -277,3 +277,25 @@ def test_miningrun_complete():
     assert "Ores per hour: 241.33" in result.output
     assert "Total lumber: 25" in result.output
     assert "Lumber per hour: 16.66" in result.output
+
+
+def test_get_stats():
+    app = Mock()
+    app.get_stats.return_value = {
+        "completed_runs": 2,
+        "total_hours": 3.0,
+        "total_ores": 170,
+        "ores_per_hour": 170 / 3,
+        "total_lumber": 140,
+        "lumber_per_hour": 140 / 3,
+    }
+    commit = Mock()
+    runner = CliRunner()
+    result = runner.invoke(
+        cli,
+        ["stats"],
+        obj={"app": app, "commit": commit},
+    )
+
+    assert result.exit_code == 0, repr(result.exception)
+    app.get_stats.assert_called_once()
